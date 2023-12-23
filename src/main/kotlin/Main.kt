@@ -1,3 +1,6 @@
+import utils.MutVec3
+import utils.Vec3
+import utils.toColor
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
@@ -16,14 +19,14 @@ fun main(args: Array<String>) {
 	repeat(imageHeight) { y ->
 		System.err.print("\rScanlines remaining: %03d".format(imageHeight - y))
 		repeat(imageWidth) { x ->
-			val color = (x shl 8) or (y shl 0)
-			image.setRGB(x, y, color)
+			val mv = MutVec3()
+			val v = Vec3(x.toDouble() / (imageWidth - 1), y.toDouble() / (imageHeight - 1), 1.0)
+			mv += v
+			image.setRGB(x, y, mv.toColor())
 		}
 	}
-	
+
 	println("\rDone.                        ")
 	val file = File(outputFile)
 	ImageIO.write(image, "png", file)
-
-
 }

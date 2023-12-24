@@ -31,11 +31,10 @@ class MutVec3(
 	operator fun minusAssign(v: Vec3) {
 		repeat(3) {elements[it] -= v.elements[it]}
 	}
-	operator fun timesAssign(v: Vec3) {
-		repeat(3) {elements[it] *= v.elements[it]}
+	operator fun timesAssign(n: Number) {
+		repeat(3) {elements[it] *= n.toDouble()}
 	}
-	operator fun divAssign(v: Vec3) {
-		repeat(3) {elements[it] /= v.elements[it]}
+	operator fun divAssign(n: Number) {
+		repeat(3) {elements[it] /= n.toDouble()}
 	}
-
 }

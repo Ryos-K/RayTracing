@@ -30,8 +30,10 @@ open class Vec3(
 	operator fun plus(v: Vec3) = Vec3(x + v.x, y + v.y, z + v.z)
 	operator fun minus(v: Vec3) = Vec3(x - v.x, y - v.y, z - v.z)
 	operator fun times(v: Vec3) = Vec3(x * v.x, y * v.y, z * v.z)
-	operator fun times(d: Double) = Vec3(x * d, y * d, z * d)
-	operator fun div(d: Double) = Vec3(x / d, y / d, z / d)
+	operator fun times(n: Number) = Vec3(x * n.toDouble(), y * n.toDouble(), z * n.toDouble())
+	operator fun div(n: Number) = Vec3(x / n.toDouble(), y / n.toDouble(), z / n.toDouble())
 	infix fun dot(v: Vec3) = x * v.x + y * v.y + z * v.z
 	infix fun cross(v: Vec3) = Vec3(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x)
 }
+
+operator fun Number.times(v: Vec3) = v * this

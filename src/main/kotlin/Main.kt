@@ -6,17 +6,18 @@ import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
 import kotlin.system.exitProcess
-import kotlin.time.times
 
 // Image
 const val aspectRatio = 16.0 / 9.0
 const val imageWidth = 400
-val imageHeight = (imageWidth / aspectRatio).toInt().coerceAtLeast(1)
+val imageHeight = (imageWidth / aspectRatio).toInt()//.coerceAtLeast(1)
+
 // Camera
 const val focalLength = 1.0
 const val viewportHeight = 2.0
-val viewportWidth = viewportHeight * (imageWidth / imageHeight)
+val viewportWidth = viewportHeight / imageHeight * imageWidth
 val cameraCenter = Vec3()
+
 // Viewport
 val viewportU = Vec3(viewportWidth, 0.0, 0.0)
 val viewportV = Vec3(0.0, viewportHeight, 0.0)
@@ -51,4 +52,8 @@ fun main(args: Array<String>) {
 	ImageIO.write(image, "png", file)
 }
 
-fun Ray.rayColor() = ((vector.unit.y + 1.0) / 2.0).let {a -> Vec3(1.0, 1.0, 1.0) * (1 - a) + Vec3(0.5, 0.2, 0.8) * a}.toColor()
+fun Ray.rayColor() =
+	if (inSphere(Vec3(0.0, 0.0, -1.0), 0.5))
+		Vec3(1.0, 0.0, 0.0).toColor()
+	else
+		((vector.unit.y + 1.0) / 2.0).let { a -> Vec3(1.0, 1.0, 1.0) * (1 - a) + Vec3(0.5, 0.7, 1.0) * a }.toColor()

@@ -1,7 +1,7 @@
 package body
 
 import model.HitRecord
-import utils.Ray
+import model.Ray
 import utils.Vec3
 import kotlin.math.sqrt
 

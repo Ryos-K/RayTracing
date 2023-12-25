@@ -1,8 +1,6 @@
 import body.Body
-import body.Sphere
 import model.HitRecord
-import utils.Ray
-import utils.Vec3
+import model.Ray
 
 class World(c: Collection<Body>) : ArrayList<Body>(c), Body {
 	override fun hit(ray: Ray, tMin: Double, tMax: Double): HitRecord? {

@@ -36,6 +36,9 @@ open class Vec3(
 	operator fun<T:Number> div(n: T) = Vec3(x / n.toDouble(), y / n.toDouble(), z / n.toDouble())
 	infix fun dot(v: Vec3) = x * v.x + y * v.y + z * v.z
 	infix fun cross(v: Vec3) = Vec3(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x)
+
+	override fun toString(): String =
+		"${javaClass.canonicalName}[$x $y $z]"
 }
 
 operator fun<T: Number> T.times(v: Vec3) = v * this

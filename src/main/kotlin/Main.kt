@@ -4,6 +4,7 @@ import utils.*
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
+import kotlin.random.Random
 import kotlin.system.exitProcess
 
 fun main(args: Array<String>) {

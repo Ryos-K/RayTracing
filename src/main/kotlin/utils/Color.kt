@@ -1,3 +1,6 @@
 package utils
 
-fun Vec3.toColor() = ((x * 255.999).toInt() shl 16) + ((y * 255.999).toInt() shl 8) + ((z * 255.999).toInt() shl 0)
+fun Vec3.toColor(samplePerPixel: Int) = elements
+	.map { it / samplePerPixel }
+	.map { (it.coerceIn(0.0, 0.999) * 256).toInt() }
+	.let { (it[0] shl 16) + (it[1] shl 8) + (it[2] shl 0) }

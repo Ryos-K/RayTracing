@@ -11,6 +11,7 @@ class Camera {
 	var aspectRatio = 1.0
 	var imageWidth = 100
 	var samplePerPixel = 10
+	var maxDepth = 10
 	private var imageHeight: Int = (imageWidth / aspectRatio).toInt().coerceAtLeast(1)
 	private lateinit var cameraCenter: Vec3
 	private lateinit var deltaU: Vec3
@@ -25,7 +26,7 @@ class Camera {
 				val pixelColor = MutVec3()
 				repeat(samplePerPixel) {
 					val ray = randomRay(x, y)
-					pixelColor += rayColor(ray, world)
+					pixelColor += rayColor(ray, world, 1)
 				}
 				image.setRGB(x, y, pixelColor.toColor(samplePerPixel))
 			}
@@ -61,9 +62,13 @@ class Camera {
 	private fun randomInSquare() =
 		(-0.5 + nextDouble()) * deltaU + (-0.5 + nextDouble()) * deltaV
 
-	private fun rayColor(ray: Ray, world: World): Vec3 {
-		world.hit(ray, 0.0, Double.POSITIVE_INFINITY)
-			?.let { return (0.5 * (it.normal + 1.0)) }
+	private fun rayColor(ray: Ray, world: World, depth: Int): Vec3 {
+		if (depth > maxDepth) return Vec3()
+
+		world.hit(ray, 0.01, Double.POSITIVE_INFINITY)?.let {
+			val vector = Vec3.randomOnHemisphere(it.normal)
+			return 0.5 * rayColor(Ray(it.point, vector), world, depth + 1)
+		}
 
 		return ((ray.vector.unit.y + 1.0) / 2.0)
 			.let { a -> Vec3(1.0, 1.0, 1.0) * (1 - a) + Vec3(0.5, 0.7, 1.0) * a }

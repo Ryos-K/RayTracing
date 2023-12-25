@@ -1,6 +1,8 @@
 package utils
 
 import kotlin.math.sqrt
+import kotlin.random.Random
+import kotlin.random.Random.Default.nextDouble
 
 open class Vec3(
 	x: Double,
@@ -28,17 +30,35 @@ open class Vec3(
 	operator fun unaryPlus() = Vec3(+x, +y, +z)
 	operator fun unaryMinus() = Vec3(-x, -y, -z)
 	operator fun plus(v: Vec3) = Vec3(x + v.x, y + v.y, z + v.z)
-	operator fun<T:Number> plus(n: T) = Vec3(x + n.toDouble(), y + n.toDouble(), z + n.toDouble())
+	operator fun <T : Number> plus(n: T) = Vec3(x + n.toDouble(), y + n.toDouble(), z + n.toDouble())
 	operator fun minus(v: Vec3) = Vec3(x - v.x, y - v.y, z - v.z)
-	operator fun<T:Number> minus(n: T) = Vec3(x - n.toDouble(), y - n.toDouble(), z - n.toDouble())
+	operator fun <T : Number> minus(n: T) = Vec3(x - n.toDouble(), y - n.toDouble(), z - n.toDouble())
 	operator fun times(v: Vec3) = Vec3(x * v.x, y * v.y, z * v.z)
-	operator fun<T:Number> times(n: T) = Vec3(x * n.toDouble(), y * n.toDouble(), z * n.toDouble())
-	operator fun<T:Number> div(n: T) = Vec3(x / n.toDouble(), y / n.toDouble(), z / n.toDouble())
+	operator fun <T : Number> times(n: T) = Vec3(x * n.toDouble(), y * n.toDouble(), z * n.toDouble())
+	operator fun <T : Number> div(n: T) = Vec3(x / n.toDouble(), y / n.toDouble(), z / n.toDouble())
 	infix fun dot(v: Vec3) = x * v.x + y * v.y + z * v.z
 	infix fun cross(v: Vec3) = Vec3(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x)
 
 	override fun toString(): String =
 		"${javaClass.canonicalName}[$x $y $z]"
+
+	companion object {
+		fun random() = Vec3(nextDouble(), nextDouble(), nextDouble())
+		fun random(from: Double, until: Double) =
+			Vec3(nextDouble(from, until), nextDouble(from, until), nextDouble(from, until))
+		fun randomInUnitSphere(): Vec3 {
+			while (true) {
+				val p = random(-1.0, 1.0)
+				if (p.length2 >= 1) continue
+				return p
+			}
+		}
+		fun randomUnitVector() = randomInUnitSphere().unit
+		fun randomOnHemisphere(normal: Vec3) =
+			randomUnitVector().let {
+				if (it dot normal > 0.0) it else -it
+			}
+	}
 }
 
-operator fun<T: Number> T.times(v: Vec3) = v * this
+operator fun <T : Number> T.times(v: Vec3) = v * this

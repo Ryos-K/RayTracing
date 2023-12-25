@@ -28,12 +28,14 @@ open class Vec3(
 	operator fun unaryPlus() = Vec3(+x, +y, +z)
 	operator fun unaryMinus() = Vec3(-x, -y, -z)
 	operator fun plus(v: Vec3) = Vec3(x + v.x, y + v.y, z + v.z)
+	operator fun<T:Number> plus(n: T) = Vec3(x + n.toDouble(), y + n.toDouble(), z + n.toDouble())
 	operator fun minus(v: Vec3) = Vec3(x - v.x, y - v.y, z - v.z)
+	operator fun<T:Number> minus(n: T) = Vec3(x - n.toDouble(), y - n.toDouble(), z - n.toDouble())
 	operator fun times(v: Vec3) = Vec3(x * v.x, y * v.y, z * v.z)
-	operator fun times(n: Number) = Vec3(x * n.toDouble(), y * n.toDouble(), z * n.toDouble())
-	operator fun div(n: Number) = Vec3(x / n.toDouble(), y / n.toDouble(), z / n.toDouble())
+	operator fun<T:Number> times(n: T) = Vec3(x * n.toDouble(), y * n.toDouble(), z * n.toDouble())
+	operator fun<T:Number> div(n: T) = Vec3(x / n.toDouble(), y / n.toDouble(), z / n.toDouble())
 	infix fun dot(v: Vec3) = x * v.x + y * v.y + z * v.z
 	infix fun cross(v: Vec3) = Vec3(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x)
 }
 
-operator fun Number.times(v: Vec3) = v * this
+operator fun<T: Number> T.times(v: Vec3) = v * this

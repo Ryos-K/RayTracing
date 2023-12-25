@@ -1,7 +1,6 @@
-import utils.MutVec3
-import utils.Ray
-import utils.Vec3
-import utils.toColor
+import body.Body
+import body.Sphere
+import utils.*
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
@@ -20,7 +19,7 @@ val cameraCenter = Vec3()
 
 // Viewport
 val viewportU = Vec3(viewportWidth, 0.0, 0.0)
-val viewportV = Vec3(0.0, viewportHeight, 0.0)
+val viewportV = Vec3(0.0, -viewportHeight, 0.0)
 val deltaU = viewportU / imageWidth
 val deltaV = viewportV / imageHeight
 val viewportTopLeft = cameraCenter - viewportU / 2.0 - viewportV / 2.0 - Vec3(0.0, 0.0, focalLength)
@@ -32,10 +31,14 @@ fun main(args: Array<String>) {
 		exitProcess(1)
 	}
 	val outputFile = args[0]
-
-
 	val image = BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB)
 
+	val world = World(
+		listOf(
+			Sphere(Vec3(0.0, 0.0, -1.0), 0.5),
+			Sphere(Vec3(0.0, -100.5, -1.0), 100.0),
+		)
+	)
 	repeat(imageHeight) { y ->
 		System.err.print("\rScanlines remaining: %03d".format(imageHeight - y))
 		repeat(imageWidth) { x ->
@@ -43,7 +46,7 @@ fun main(args: Array<String>) {
 			val rayDirection = pixel - cameraCenter
 			val ray = Ray(cameraCenter, rayDirection)
 
-			image.setRGB(x, y, ray.rayColor())
+			image.setRGB(x, y, ray.rayColor(world))
 		}
 	}
 
@@ -52,8 +55,10 @@ fun main(args: Array<String>) {
 	ImageIO.write(image, "png", file)
 }
 
-fun Ray.rayColor() =
-	if (inSphere(Vec3(0.0, 0.0, -1.0), 0.5))
-		Vec3(1.0, 0.0, 0.0).toColor()
-	else
-		((vector.unit.y + 1.0) / 2.0).let { a -> Vec3(1.0, 1.0, 1.0) * (1 - a) + Vec3(0.5, 0.7, 1.0) * a }.toColor()
+fun Ray.rayColor(world: World): Int {
+	world.hit(this, 0.0, Double.POSITIVE_INFINITY)?.let {
+		return (0.5 * (it.normal + 1.0)).toColor()
+	}
+
+	return ((vector.unit.y + 1.0) / 2.0).let { a -> Vec3(1.0, 1.0, 1.0) * (1 - a) + Vec3(0.5, 0.7, 1.0) * a }.toColor()
+}

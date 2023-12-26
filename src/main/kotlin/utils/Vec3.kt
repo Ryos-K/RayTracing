@@ -1,7 +1,9 @@
 package utils
 
 import kotlin.math.abs
+import kotlin.math.cos
 import kotlin.math.sqrt
+import kotlin.math.ulp
 import kotlin.random.Random
 import kotlin.random.Random.Default.nextDouble
 
@@ -42,6 +44,12 @@ open class Vec3(
 
 	fun nearZero() = elements.all { abs(it) < 1E-8 }
 	fun reflect(normal: Vec3) = this - 2 * (this dot normal) * normal
+	fun refract(normal: Vec3, etaRatio: Double): Vec3 {
+		val cosTheta = (-this dot normal).coerceAtMost(1.0)
+		val rayPerp = etaRatio * (this + cosTheta * normal)
+		val rayPara = -sqrt(abs(1.0 - rayPerp.length2)) * normal
+		return rayPerp + rayPara
+	}
 
 	override fun toString(): String =
 		"${javaClass.canonicalName}[$x $y $z]"

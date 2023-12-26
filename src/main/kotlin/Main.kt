@@ -1,4 +1,5 @@
 import body.Sphere
+import material.Dielectric
 import material.Lambertian
 import material.Metal
 import model.Ray
@@ -17,15 +18,16 @@ fun main(args: Array<String>) {
 	val outputFile = args[0]
 
 	val materialGround = Lambertian(Vec3(0.8, 0.8, 0.0))
-	val materialCenter = Lambertian(Vec3(0.7, 0.3, 0.3))
-	val materialLeft = Metal(Vec3(0.8, 0.8, 0.8), 0.3)
-	val materialRight = Metal(Vec3(0.8, 0.6, 0.2), 1.0)
+	val materialCenter = Lambertian(Vec3(0.1, 0.2, 0.5))
+	val materialLeft = Dielectric(1.5)
+	val materialRight = Metal(Vec3(0.8, 0.6, 0.2), 0.1)
 
 	val world = World(
 		listOf(
 			Sphere(Vec3(0.0, -100.5, -1.0), 100.0, materialGround),
 			Sphere(Vec3(0.0, 0.0, -1.0), 0.5, materialCenter),
 			Sphere(Vec3(-1.0, 0.0, -1.0), 0.5, materialLeft),
+			Sphere(Vec3(-1.0, 0.0, -1.0), -0.4, materialLeft),
 			Sphere(Vec3(1.0, 0.0, -1.0), 0.5, materialRight),
 		)
 	)

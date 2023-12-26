@@ -18,8 +18,8 @@ fun main(args: Array<String>) {
 
 	val materialGround = Lambertian(Vec3(0.8, 0.8, 0.0))
 	val materialCenter = Lambertian(Vec3(0.7, 0.3, 0.3))
-	val materialLeft = Metal(Vec3(0.8, 0.8, 0.8))
-	val materialRight = Metal(Vec3(0.8, 0.6, 0.2))
+	val materialLeft = Metal(Vec3(0.8, 0.8, 0.8), 0.3)
+	val materialRight = Metal(Vec3(0.8, 0.6, 0.2), 1.0)
 
 	val world = World(
 		listOf(

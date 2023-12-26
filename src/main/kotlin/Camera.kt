@@ -1,3 +1,4 @@
+import model.HitRecord
 import model.Ray
 import utils.MutVec3
 import utils.Vec3
@@ -65,9 +66,10 @@ class Camera {
 	private fun rayColor(ray: Ray, world: World, depth: Int): Vec3 {
 		if (depth > maxDepth) return Vec3()
 
-		world.hit(ray, 0.01, Double.POSITIVE_INFINITY)?.let {
-			val vector = it.normal + Vec3.randomUnitVector()
-			return 0.5 * rayColor(Ray(it.point, vector), world, depth + 1)
+		world.hit(ray, 0.01, Double.POSITIVE_INFINITY)?.let { record ->
+			return record.material.scatter(ray, record)?.let {
+				record.material.attenuation * rayColor(it, world, depth + 1)
+			} ?: Vec3()
 		}
 
 		return ((ray.vector.unit.y + 1.0) / 2.0)

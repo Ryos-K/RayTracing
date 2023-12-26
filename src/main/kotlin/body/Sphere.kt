@@ -1,5 +1,6 @@
 package body
 
+import material.Material
 import model.HitRecord
 import model.Ray
 import utils.Vec3
@@ -8,6 +9,7 @@ import kotlin.math.sqrt
 data class Sphere(
 	val center: Vec3,
 	val radius: Double,
+	override val material: Material
 ) : Body {
 	override fun hit(ray: Ray, tMin: Double, tMax: Double): HitRecord? {
 		val oc = ray.origin - center
@@ -25,6 +27,6 @@ data class Sphere(
 		val point = ray.at(t)
 		val outwardNormal = (point - center) / radius
 		val front = (ray.vector dot outwardNormal) < 0
-		return HitRecord(point, if (front) outwardNormal else -outwardNormal, t, front)
+		return HitRecord(point, if (front) outwardNormal else -outwardNormal, material, t, front)
 	}
 }

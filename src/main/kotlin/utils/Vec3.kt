@@ -1,5 +1,6 @@
 package utils
 
+import kotlin.math.abs
 import kotlin.math.sqrt
 import kotlin.random.Random
 import kotlin.random.Random.Default.nextDouble
@@ -38,6 +39,9 @@ open class Vec3(
 	operator fun <T : Number> div(n: T) = Vec3(x / n.toDouble(), y / n.toDouble(), z / n.toDouble())
 	infix fun dot(v: Vec3) = x * v.x + y * v.y + z * v.z
 	infix fun cross(v: Vec3) = Vec3(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x)
+
+	fun nearZero() = elements.all { abs(it) < 1E-8 }
+	fun reflect(normal: Vec3) = this - 2 * (this dot normal) * normal
 
 	override fun toString(): String =
 		"${javaClass.canonicalName}[$x $y $z]"

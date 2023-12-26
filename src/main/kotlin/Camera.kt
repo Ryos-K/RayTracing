@@ -66,7 +66,7 @@ class Camera {
 		if (depth > maxDepth) return Vec3()
 
 		world.hit(ray, 0.01, Double.POSITIVE_INFINITY)?.let {
-			val vector = Vec3.randomOnHemisphere(it.normal)
+			val vector = it.normal + Vec3.randomUnitVector()
 			return 0.5 * rayColor(Ray(it.point, vector), world, depth + 1)
 		}
 

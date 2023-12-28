@@ -5,6 +5,7 @@ import utils.Vec3
 import utils.times
 import utils.toColor
 import java.awt.image.BufferedImage
+import kotlin.math.tan
 import kotlin.random.Random
 import kotlin.random.Random.Default.nextDouble
 
@@ -13,11 +14,18 @@ class Camera {
 	var imageWidth = 100
 	var samplePerPixel = 10
 	var maxDepth = 10
+	var verticalFov = 90.0
+	var lookFrom = Vec3(0.0,0.0,0.0)
+	var lookAt = Vec3(0.0,0.0,-1.0)
+	var upDir = Vec3(0.0, 1.0, 0.0)
 	private var imageHeight: Int = (imageWidth / aspectRatio).toInt().coerceAtLeast(1)
 	private lateinit var cameraCenter: Vec3
+	private lateinit var pixelTopLeft: Vec3
 	private lateinit var deltaU: Vec3
 	private lateinit var deltaV: Vec3
-	private lateinit var pixelTopLeft: Vec3
+	private lateinit var u: Vec3
+	private lateinit var v: Vec3
+	private lateinit var w: Vec3
 	fun render(world: World): BufferedImage {
 		initialize()
 		val image = BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB)
@@ -37,19 +45,43 @@ class Camera {
 	}
 
 	private fun initialize() {
-		val focalLength = 1.0
-		val viewportHeight = 2.0
 		imageHeight = (imageWidth / aspectRatio).toInt().coerceAtLeast(1)
-		cameraCenter = Vec3()
+
+		val focalLength = (lookFrom - lookAt).length
+		cameraCenter = lookFrom
+		val viewportHeight = 2 * tan(verticalFov.toRadian() / 2) * focalLength
 		val viewportWidth = viewportHeight / imageHeight * imageWidth
 
-		val viewportU = Vec3(viewportWidth, 0.0, 0.0)
-		val viewportV = Vec3(0.0, -viewportHeight, 0.0)
+		w = (lookFrom - lookAt).unit
+		u = upDir cross w
+		v = w cross u
+		val viewportU = viewportWidth * u
+		val viewportV = viewportHeight * -v
 		deltaU = viewportU / imageWidth
 		deltaV = viewportV / imageHeight
 
-		val viewportTopLeft = cameraCenter - viewportU / 2.0 - viewportV / 2.0 - Vec3(0.0, 0.0, focalLength)
+		val viewportTopLeft = cameraCenter - viewportU / 2.0 - viewportV / 2.0 - focalLength * w
 		pixelTopLeft = viewportTopLeft + deltaU / 2.0 + deltaV / 2.0
+
+		println("""
+			|Camera:
+			|  lookFrom: $lookFrom
+			|  lookAt: $lookAt
+			|  upDir: $upDir
+			|  aspectRatio: $aspectRatio
+			|  imageWidth: $imageWidth
+			|  imageHeight: $imageHeight
+			|  samplePerPixel: $samplePerPixel
+			|  maxDepth: $maxDepth
+			|  verticalFov: $verticalFov
+			|  cameraCenter: $cameraCenter
+			|  pixelTopLeft: $pixelTopLeft
+			|  deltaU: $deltaU
+			|  deltaV: $deltaV
+			|  u: $u
+			|  v: $v
+			|  w: $w
+		""".trimIndent())
 	}
 
 	private fun randomRay(x: Int, y: Int): Ray {
@@ -76,3 +108,5 @@ class Camera {
 			.let { a -> Vec3(1.0, 1.0, 1.0) * (1 - a) + Vec3(0.5, 0.7, 1.0) * a }
 	}
 }
+
+private fun Double.toRadian() = this / 180.0 * Math.PI

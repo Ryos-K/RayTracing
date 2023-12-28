@@ -34,8 +34,13 @@ fun main(args: Array<String>) {
 	val camera = Camera()
 	camera.aspectRatio = 16.0 / 9.0
 	camera.imageWidth = 400
-	camera.samplePerPixel = 100
-	camera.maxDepth = 10
+	camera.samplePerPixel = 50
+	camera.maxDepth = 20
+	camera.verticalFov = 90.0
+	camera.lookFrom = Vec3(-2.0, 2.0, 1.0)
+	camera.lookAt = Vec3(0.0, 0.0, -1.0)
+	camera.upDir = Vec3(0.0, 1.0, 0.0)
+
 	val image = camera.render(world)
 
 	val file = File(outputFile)

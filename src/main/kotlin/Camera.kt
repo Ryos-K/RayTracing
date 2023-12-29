@@ -15,10 +15,12 @@ class Camera {
 	var samplePerPixel = 10
 	var maxDepth = 10
 	var verticalFov = 90.0
-	var lookFrom = Vec3(0.0,0.0,0.0)
-	var lookAt = Vec3(0.0,0.0,-1.0)
+	var lookFrom = Vec3(0.0, 0.0, 0.0)
+	var lookAt = Vec3(0.0, 0.0, -1.0)
 	var upDir = Vec3(0.0, 1.0, 0.0)
-	private var imageHeight: Int = (imageWidth / aspectRatio).toInt().coerceAtLeast(1)
+	var defocusAngle = 0.0
+	var focusDist = 10.0
+	private var imageHeight: Int = 0
 	private lateinit var cameraCenter: Vec3
 	private lateinit var pixelTopLeft: Vec3
 	private lateinit var deltaU: Vec3
@@ -26,6 +28,8 @@ class Camera {
 	private lateinit var u: Vec3
 	private lateinit var v: Vec3
 	private lateinit var w: Vec3
+	private lateinit var defocusDiskU: Vec3
+	private lateinit var defocusDiskV: Vec3
 	fun render(world: World): BufferedImage {
 		initialize()
 		val image = BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB)
@@ -47,9 +51,9 @@ class Camera {
 	private fun initialize() {
 		imageHeight = (imageWidth / aspectRatio).toInt().coerceAtLeast(1)
 
-		val focalLength = (lookFrom - lookAt).length
+
 		cameraCenter = lookFrom
-		val viewportHeight = 2 * tan(verticalFov.toRadian() / 2) * focalLength
+		val viewportHeight = 2 * tan(verticalFov.toRadian() / 2) * focusDist
 		val viewportWidth = viewportHeight / imageHeight * imageWidth
 
 		w = (lookFrom - lookAt).unit
@@ -60,40 +64,36 @@ class Camera {
 		deltaU = viewportU / imageWidth
 		deltaV = viewportV / imageHeight
 
-		val viewportTopLeft = cameraCenter - viewportU / 2.0 - viewportV / 2.0 - focalLength * w
+		val viewportTopLeft = cameraCenter - viewportU / 2.0 - viewportV / 2.0 - focusDist * w
 		pixelTopLeft = viewportTopLeft + deltaU / 2.0 + deltaV / 2.0
 
-		println("""
-			|Camera:
-			|  lookFrom: $lookFrom
-			|  lookAt: $lookAt
-			|  upDir: $upDir
-			|  aspectRatio: $aspectRatio
-			|  imageWidth: $imageWidth
-			|  imageHeight: $imageHeight
-			|  samplePerPixel: $samplePerPixel
-			|  maxDepth: $maxDepth
-			|  verticalFov: $verticalFov
-			|  cameraCenter: $cameraCenter
-			|  pixelTopLeft: $pixelTopLeft
-			|  deltaU: $deltaU
-			|  deltaV: $deltaV
-			|  u: $u
-			|  v: $v
-			|  w: $w
-		""".trimIndent())
+		val defocusRadius = focusDist * tan((defocusAngle / 2.0).toRadian())
+		defocusDiskU = u * defocusRadius
+		defocusDiskV = v * defocusRadius
 	}
 
 	private fun randomRay(x: Int, y: Int): Ray {
 		val pixelCenter = pixelTopLeft + deltaU * x + deltaV * y
 		val pixelRandom = pixelCenter + randomInSquare()
-		val origin = cameraCenter
+		val origin = if (defocusAngle <= 0) cameraCenter else defocusDiskSample()
 		val vector = pixelRandom - origin
 		return Ray(origin, vector)
 	}
 
+	private fun defocusDiskSample() =
+		randomInUnitDisk().let {
+			cameraCenter + (it.x * defocusDiskU) + (it.y * defocusDiskV)
+		}
+
 	private fun randomInSquare() =
 		(-0.5 + nextDouble()) * deltaU + (-0.5 + nextDouble()) * deltaV
+
+	private fun randomInUnitDisk(): Vec3 {
+		while (true) {
+			val p = Vec3(nextDouble(-1.0, 1.0), nextDouble(-1.0, 1.0), 0.0)
+			if (p.length2 < 1) return p
+		}
+	}
 
 	private fun rayColor(ray: Ray, world: World, depth: Int): Vec3 {
 		if (depth > maxDepth) return Vec3()

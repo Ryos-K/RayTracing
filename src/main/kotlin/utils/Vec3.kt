@@ -1,9 +1,6 @@
 package utils
 
-import kotlin.math.abs
-import kotlin.math.cos
-import kotlin.math.sqrt
-import kotlin.math.ulp
+import kotlin.math.*
 import kotlin.random.Random
 import kotlin.random.Random.Default.nextDouble
 
@@ -58,13 +55,18 @@ open class Vec3(
 		fun random() = Vec3(nextDouble(), nextDouble(), nextDouble())
 		fun random(from: Double, until: Double) =
 			Vec3(nextDouble(from, until), nextDouble(from, until), nextDouble(from, until))
+
 		fun randomInUnitSphere(): Vec3 {
-			while (true) {
-				val p = random(-1.0, 1.0)
-				if (p.length2 >= 1) continue
-				return p
-			}
+			val radius = nextDouble()
+			val theta = nextDouble(0.0, 2 * PI)
+			val phi = nextDouble(-PI / 2, PI / 2)
+			return Vec3(
+				radius * cos(phi) * cos(theta),
+				radius * cos(phi) * sin(theta),
+				radius * sin(phi)
+			)
 		}
+
 		fun randomUnitVector() = randomInUnitSphere().unit
 		fun randomOnHemisphere(normal: Vec3) =
 			randomUnitVector().let {

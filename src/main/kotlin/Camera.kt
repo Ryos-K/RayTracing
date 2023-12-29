@@ -5,6 +5,9 @@ import utils.Vec3
 import utils.times
 import utils.toColor
 import java.awt.image.BufferedImage
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
 import kotlin.math.tan
 import kotlin.random.Random
 import kotlin.random.Random.Default.nextDouble
@@ -89,10 +92,13 @@ class Camera {
 		(-0.5 + nextDouble()) * deltaU + (-0.5 + nextDouble()) * deltaV
 
 	private fun randomInUnitDisk(): Vec3 {
-		while (true) {
-			val p = Vec3(nextDouble(-1.0, 1.0), nextDouble(-1.0, 1.0), 0.0)
-			if (p.length2 < 1) return p
-		}
+		val radius = nextDouble()
+		val theta = nextDouble(0.0, 2 * PI)
+		return Vec3(
+			radius * cos(theta),
+			radius * sin(theta),
+			0.0
+		)
 	}
 
 	private fun rayColor(ray: Ray, world: World, depth: Int): Vec3 {

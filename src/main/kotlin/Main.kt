@@ -8,6 +8,7 @@ import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
 import kotlin.random.Random
+import kotlin.random.Random.Default.nextDouble
 import kotlin.system.exitProcess
 
 fun main(args: Array<String>) {
@@ -17,31 +18,47 @@ fun main(args: Array<String>) {
 	}
 	val outputFile = args[0]
 
-	val materialGround = Lambertian(Vec3(0.8, 0.8, 0.0))
-	val materialCenter = Lambertian(Vec3(0.1, 0.2, 0.5))
-	val materialLeft = Dielectric(1.5)
-	val materialRight = Metal(Vec3(0.8, 0.6, 0.2), 0.1)
 
 	val world = World(
 		listOf(
-			Sphere(Vec3(0.0, -100.5, -1.0), 100.0, materialGround),
-			Sphere(Vec3(0.0, 0.0, -1.0), 0.5, materialCenter),
-			Sphere(Vec3(-1.0, 0.0, -1.0), 0.5, materialLeft),
-			Sphere(Vec3(-1.0, 0.0, -1.0), -0.4, materialLeft),
-			Sphere(Vec3(1.0, 0.0, -1.0), 0.5, materialRight),
+			// Ground
+			Sphere(Vec3(0.0, -1000.0, 0.0), 1000.0, Lambertian(Vec3(0.5, 0.5, 0.5))),
+			// Objects
+			Sphere(Vec3(0.0, 1.0, 0.0), 1.0, Dielectric(1.5)),
+			Sphere(Vec3(-4.0, 1.0, 0.0), 1.0, Lambertian(Vec3(0.4, 0.2, 0.1))),
+			Sphere(Vec3(4.0, 1.0, 0.0), 1.0, Metal(Vec3(0.7, 0.6, 0.5), 0.0))
 		)
 	)
-	val camera = Camera()
-	camera.aspectRatio = 16.0 / 9.0
-	camera.imageWidth = 400
-	camera.samplePerPixel = 50
-	camera.maxDepth = 20
-	camera.verticalFov = 90.0
-	camera.lookFrom = Vec3(-2.0, 2.0, 1.0)
-	camera.lookAt = Vec3(0.0, 0.0, -1.0)
-	camera.upDir = Vec3(0.0, 1.0, 0.0)
+	for (a in -11..11) {
+		for (b in -11..11) {
+			val center = Vec3(a + 0.9 * nextDouble(), 0.2, b + 0.9 * nextDouble())
+				.takeIf { (it - Vec3(4.0, 0.2, 0.0)).length > 0.9 } ?: continue
+			world.add(
+				Sphere(
+					center,
+					0.2,
+					when (nextDouble()) {
+						in 0.0..0.8  -> Lambertian(Vec3.random() * Vec3.random())
+						in 0.8..0.95 -> Metal(Vec3.random(0.5, 1.0), nextDouble(0.0, 0.5))
+						else         -> Dielectric(1.5)
+					}
+				)
+			)
+		}
+	}
 
-	val image = camera.render(world)
+	val image = Camera().apply {
+		aspectRatio = 16.0 / 9.0
+		imageWidth = 1200
+		samplePerPixel = 500
+		maxDepth = 50
+		verticalFov = 20.0
+		lookFrom = Vec3(13.0, 2.0, 3.0)
+		lookAt = Vec3(0.0, 0.0, 0.0)
+		upDir = Vec3(0.0, 1.0, 0.0)
+		defocusAngle = 0.6
+		focusDist = 10.0
+	}.render(world)
 
 	val file = File(outputFile)
 	ImageIO.write(image, "png", file)

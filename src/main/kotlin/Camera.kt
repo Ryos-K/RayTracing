@@ -1,15 +1,14 @@
-import model.HitRecord
 import model.Ray
 import utils.MutVec3
 import utils.Vec3
 import utils.times
 import utils.toColor
 import java.awt.image.BufferedImage
+import java.util.stream.IntStream
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.tan
-import kotlin.random.Random
 import kotlin.random.Random.Default.nextDouble
 
 class Camera {
@@ -36,24 +35,30 @@ class Camera {
 	fun render(world: World): BufferedImage {
 		initialize()
 		val image = BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB)
-		repeat(imageHeight) { y ->
-			System.err.print("\rScanlines remaining: %03d".format(imageHeight - y))
-			repeat(imageWidth) { x ->
-				val pixelColor = MutVec3()
-				repeat(samplePerPixel) {
-					val ray = randomRay(x, y)
-					pixelColor += rayColor(ray, world, 1)
+		var remaining = imageHeight * imageWidth
+		IntStream.range(0, imageHeight * imageWidth).parallel().forEach { i ->
+			val y = i / imageWidth
+			val x = i % imageWidth
+			val pixelColor = MutVec3()
+			repeat(samplePerPixel) {
+				val ray = randomRay(x, y)
+				pixelColor += rayColor(ray, world, 0)
+			}
+			image.setRGB(x, y, pixelColor.toColor(samplePerPixel))
+
+			synchronized(this) {
+				remaining--
+				if (remaining % 100 == 0) {
+					print("Remaining: %08d\r".format(remaining))
 				}
-				image.setRGB(x, y, pixelColor.toColor(samplePerPixel))
 			}
 		}
-		println("\rDone.                        \n")
+		println("Done")
 		return image
 	}
 
 	private fun initialize() {
 		imageHeight = (imageWidth / aspectRatio).toInt().coerceAtLeast(1)
-
 
 		cameraCenter = lookFrom
 		val viewportHeight = 2 * tan(verticalFov.toRadian() / 2) * focusDist

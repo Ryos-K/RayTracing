@@ -49,9 +49,9 @@ fun main(args: Array<String>) {
 
 	val image = Camera().apply {
 		aspectRatio = 16.0 / 9.0
-		imageWidth = 1200
-		samplePerPixel = 500
-		maxDepth = 50
+		imageWidth = 400
+		samplePerPixel = 50
+		maxDepth = 10
 		verticalFov = 20.0
 		lookFrom = Vec3(13.0, 2.0, 3.0)
 		lookAt = Vec3(0.0, 0.0, 0.0)

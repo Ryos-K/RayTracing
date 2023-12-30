@@ -13,6 +13,8 @@
 
 ![Output Image](img/image.png)
 
+![Output Image with Light](img/light.png)
+
 ## Reference
 
 [Ray Tracing in One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html)

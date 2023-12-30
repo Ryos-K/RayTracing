@@ -11,17 +11,22 @@ import kotlin.math.sin
 import kotlin.math.tan
 import kotlin.random.Random.Default.nextDouble
 
-class Camera {
-	var aspectRatio = 1.0
-	var imageWidth = 100
-	var samplePerPixel = 10
-	var maxDepth = 10
-	var verticalFov = 90.0
-	var lookFrom = Vec3(0.0, 0.0, 0.0)
-	var lookAt = Vec3(0.0, 0.0, -1.0)
-	var upDir = Vec3(0.0, 1.0, 0.0)
-	var defocusAngle = 0.0
-	var focusDist = 10.0
+class Camera(
+	var aspectRatio: Double = 1.0,
+	var imageWidth: Int = 100,
+	var samplePerPixel: Int = 10,
+	var maxDepth: Int = 10,
+	var verticalFov: Double = 90.0,
+	var lookFrom: Vec3 = Vec3(0.0, 0.0, 0.0),
+	var lookAt: Vec3 = Vec3(0.0, 0.0, -1.0),
+	var upDir: Vec3 = Vec3(0.0, 1.0, 0.0),
+	var defocusAngle: Double = 0.0,
+	var focusDist: Double = 10.0,
+	var background: (Ray) -> Vec3 = { ray: Ray ->
+		((ray.vector.unit.y + 1.0) / 2.0)
+			.let { a -> Vec3(1.0, 1.0, 1.0) * (1 - a) + Vec3(0.5, 0.7, 1.0) * a }
+	},
+) {
 	private var imageHeight: Int = 0
 	private lateinit var cameraCenter: Vec3
 	private lateinit var pixelTopLeft: Vec3
@@ -111,12 +116,11 @@ class Camera {
 
 		world.hit(ray, 0.01, Double.POSITIVE_INFINITY)?.let { record ->
 			return record.material.scatter(ray, record)?.let {
-				record.material.attenuation * rayColor(it, world, depth + 1)
+				record.material.attenuation * rayColor(it, world, depth + 1) + record.material.emitted
 			} ?: Vec3()
 		}
 
-		return ((ray.vector.unit.y + 1.0) / 2.0)
-			.let { a -> Vec3(1.0, 1.0, 1.0) * (1 - a) + Vec3(0.5, 0.7, 1.0) * a }
+		return background(ray)
 	}
 }
 

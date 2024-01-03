@@ -9,14 +9,15 @@ import kotlin.math.sqrt
 data class Sphere(
 	val center: Vec3,
 	val radius: Double,
-	override val material: Material
+	override val material: Material,
 ) : Body {
 	override fun hit(ray: Ray, tMin: Double, tMax: Double): HitRecord? {
 		val oc = ray.origin - center
 		val a = ray.vector.length2
 		val harfB = oc dot ray.vector
 		val c = oc.length2 - radius * radius
-		val discriminant = (harfB * harfB - a * c).takeIf { it >= 0 } ?: return null
+		val discriminant = (harfB * harfB - a * c)
+			.takeIf { it >= 0 } ?: return null
 
 		val sqrtDiscriminant = sqrt(discriminant)
 		val t = when {

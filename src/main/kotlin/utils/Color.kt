@@ -2,7 +2,7 @@ package utils
 
 import kotlin.math.sqrt
 
-fun Vec3.toColor(samplePerPixel: Int) = elements
+fun Vec3.toIntRGB(samplePerPixel: Int) = doubleArrayOf(x, y, z)
 	.map { it / samplePerPixel }
 	.map { linearToGamma(it) }
 	.map { (it.coerceIn(0.0, 0.999) * 256).toInt() }

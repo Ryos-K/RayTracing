@@ -1,8 +1,5 @@
 import model.Ray
-import utils.MutVec3
-import utils.Vec3
-import utils.times
-import utils.toColor
+import utils.*
 import java.awt.image.BufferedImage
 import java.util.stream.IntStream
 import kotlin.math.PI
@@ -24,7 +21,7 @@ class Camera(
 	var focusDist: Double = 10.0,
 	var background: (Ray) -> Vec3 = { ray: Ray ->
 		((ray.vector.unit.y + 1.0) / 2.0)
-			.let { a -> Vec3(1.0, 1.0, 1.0) * (1 - a) + Vec3(0.5, 0.7, 1.0) * a }
+			.let { a -> (1 - a) * Vec3(1.0, 1.0, 1.0) + a * Vec3(0.5, 0.7, 1.0) }
 	},
 ) {
 	private var imageHeight: Int = 0
@@ -41,24 +38,23 @@ class Camera(
 		initialize()
 		val image = BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB)
 		var remaining = imageHeight * imageWidth
+		// Process each pixel in parallel
 		IntStream.range(0, imageHeight * imageWidth).parallel().forEach { i ->
 			val y = i / imageWidth
 			val x = i % imageWidth
-			val pixelColor = MutVec3()
+			var pixelColor = Vec3()
 			repeat(samplePerPixel) {
-				val ray = randomRay(x, y)
-				pixelColor += rayColor(ray, world, 0)
+				pixelColor += rayColor(randomRay(x, y), world, 0)
 			}
-			image.setRGB(x, y, pixelColor.toColor(samplePerPixel))
-
-			synchronized(this) {
-				remaining--
-				if (remaining % 100 == 0) {
-					print("Remaining: %08d\r".format(remaining))
+			image.setRGB(x, y, pixelColor.toIntRGB(samplePerPixel))
+			if (x == 0) {
+				synchronized(this) {
+					remaining -= imageWidth
+					System.err.print("Remaining: %08d\r".format(remaining))
 				}
 			}
 		}
-		println("Done")
+		System.err.println("Done")
 		return image
 	}
 
@@ -86,7 +82,7 @@ class Camera(
 	}
 
 	private fun randomRay(x: Int, y: Int): Ray {
-		val pixelCenter = pixelTopLeft + deltaU * x + deltaV * y
+		val pixelCenter = pixelTopLeft + (deltaU * x) + (deltaV * y)
 		val pixelRandom = pixelCenter + randomInSquare()
 		val origin = if (defocusAngle <= 0) cameraCenter else defocusDiskSample()
 		val vector = pixelRandom - origin
@@ -114,14 +110,13 @@ class Camera(
 	private fun rayColor(ray: Ray, world: World, depth: Int): Vec3 {
 		if (depth > maxDepth) return Vec3()
 
-		world.hit(ray, 0.01, Double.POSITIVE_INFINITY)?.let { record ->
-			return record.material.scatter(ray, record)?.let {
-				record.material.attenuation * rayColor(it, world, depth + 1) + record.material.emitted
-			} ?: Vec3()
-		}
+		val record = world.hit(ray, 0.01, Double.POSITIVE_INFINITY)
+			?: return background(ray) // if not hit, return background color
 
-		return background(ray)
+		return record.material.scatter(ray, record)?.let {
+			record.material.attenuation * rayColor(it, world, depth + 1) + record.material.emitted
+		} ?: Vec3() // if not scattered, return black
 	}
 }
 
-private fun Double.toRadian() = this / 180.0 * Math.PI
+
